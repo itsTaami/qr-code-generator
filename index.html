@@ -93,6 +93,37 @@
             color: #999;
             font-style: italic;
         }
+
+        .size-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+        }
+
+        .size-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
@@ -102,6 +133,14 @@
         <div class="input-group">
             <label for="text-input">Enter Text or URL</label>
             <input type="text" id="text-input" placeholder="https://example.com">
+        </div>
+
+        <div class="input-group">
+            <label for="size-slider">QR Code Size</label>
+            <div class="size-control">
+                <input type="range" id="size-slider" min="100" max="400" value="200" step="10">
+                <span class="size-value" id="size-value">200px</span>
+            </div>
         </div>
 
         <button id="generate-btn">Generate QR Code</button>
@@ -117,13 +156,22 @@
     <script>
         // App state
         const state = {
-            qrCode: null
+            qrCode: null,
+            size: 200
         };
 
         // DOM elements
         const textInput = document.getElementById('text-input');
         const generateBtn = document.getElementById('generate-btn');
         const qrOutput = document.getElementById('qr-output');
+        const sizeSlider = document.getElementById('size-slider');
+        const sizeValue = document.getElementById('size-value');
+
+        // Update size display
+        sizeSlider.addEventListener('input', () => {
+            state.size = parseInt(sizeSlider.value);
+            sizeValue.textContent = state.size + 'px';
+        });
 
         // Generate QR Code
         generateBtn.addEventListener('click', () => {
@@ -140,8 +188,8 @@
             // Generate new QR code
             state.qrCode = new QRCode(qrOutput, {
                 text: text,
-                width: 200,
-                height: 200,
+                width: state.size,
+                height: state.size,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
