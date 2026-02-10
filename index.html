@@ -134,6 +134,42 @@
         #download-btn:hover {
             box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
         }
+
+        .color-controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        .color-picker {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-picker label {
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +189,20 @@
             </div>
         </div>
 
+        <div class="input-group">
+            <label>QR Code Colors</label>
+            <div class="color-controls">
+                <div class="color-picker">
+                    <label for="fg-color">Foreground</label>
+                    <input type="color" id="fg-color" value="#000000">
+                </div>
+                <div class="color-picker">
+                    <label for="bg-color">Background</label>
+                    <input type="color" id="bg-color" value="#ffffff">
+                </div>
+            </div>
+        </div>
+
         <button id="generate-btn">Generate QR Code</button>
 
         <div id="qr-output">
@@ -169,7 +219,9 @@
         // App state
         const state = {
             qrCode: null,
-            size: 200
+            size: 200,
+            fgColor: '#000000',
+            bgColor: '#ffffff'
         };
 
         // DOM elements
@@ -179,6 +231,17 @@
         const sizeSlider = document.getElementById('size-slider');
         const sizeValue = document.getElementById('size-value');
         const downloadBtn = document.getElementById('download-btn');
+        const fgColorPicker = document.getElementById('fg-color');
+        const bgColorPicker = document.getElementById('bg-color');
+
+        // Update colors
+        fgColorPicker.addEventListener('input', () => {
+            state.fgColor = fgColorPicker.value;
+        });
+
+        bgColorPicker.addEventListener('input', () => {
+            state.bgColor = bgColorPicker.value;
+        });
 
         // Update size display
         sizeSlider.addEventListener('input', () => {
@@ -203,8 +266,8 @@
                 text: text,
                 width: state.size,
                 height: state.size,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
+                colorDark: state.fgColor,
+                colorLight: state.bgColor,
                 correctLevel: QRCode.CorrectLevel.H
             });
 
