@@ -125,14 +125,49 @@
             color: #667eea;
         }
 
-        #download-btn {
+        .action-buttons {
+            display: flex;
+            gap: 10px;
             margin-top: 15px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+        }
+
+        #download-btn {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             display: none;
         }
 
         #download-btn:hover {
             box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+        }
+
+        #copy-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: none;
+        }
+
+        #copy-btn:hover {
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        }
+
+        .copy-feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .copy-feedback.show {
+            opacity: 1;
         }
 
         .color-controls {
@@ -242,8 +277,13 @@
             <p class="placeholder">Your QR code will appear here</p>
         </div>
 
-        <button id="download-btn">Download PNG</button>
+        <div class="action-buttons">
+            <button id="download-btn">Download PNG</button>
+            <button id="copy-btn">Copy to Clipboard</button>
+        </div>
     </div>
+
+    <div class="copy-feedback" id="copy-feedback">Copied to clipboard!</div>
 
     <!-- QRCode.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -276,6 +316,8 @@
         const fgColorPicker = document.getElementById('fg-color');
         const bgColorPicker = document.getElementById('bg-color');
         const errorLevelSelect = document.getElementById('error-level');
+        const copyBtn = document.getElementById('copy-btn');
+        const copyFeedback = document.getElementById('copy-feedback');
 
         // Update error level
         errorLevelSelect.addEventListener('change', () => {
@@ -319,8 +361,9 @@
                 correctLevel: errorLevels[state.errorLevel]
             });
 
-            // Show download button
+            // Show action buttons
             downloadBtn.style.display = 'block';
+            copyBtn.style.display = 'block';
         });
 
         // Download QR code as PNG
@@ -333,6 +376,30 @@
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
+
+        // Copy QR code to clipboard
+        copyBtn.addEventListener('click', async () => {
+            const canvas = qrOutput.querySelector('canvas');
+            if (!canvas) return;
+
+            try {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                showFeedback('Copied to clipboard!');
+            } catch (err) {
+                showFeedback('Failed to copy. Try downloading instead.');
+            }
+        });
+
+        function showFeedback(message) {
+            copyFeedback.textContent = message;
+            copyFeedback.classList.add('show');
+            setTimeout(() => {
+                copyFeedback.classList.remove('show');
+            }, 2000);
+        }
 
         // Generate on Enter key
         textInput.addEventListener('keypress', (e) => {
