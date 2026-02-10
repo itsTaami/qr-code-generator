@@ -170,6 +170,79 @@
             border: none;
             border-radius: 4px;
         }
+
+        .history-section {
+            margin-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .history-header h3 {
+            color: #333;
+            font-size: 16px;
+        }
+
+        .clear-history {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 10px;
+            width: auto;
+        }
+
+        .clear-history:hover {
+            text-decoration: underline;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #e8e8e8;
+        }
+
+        .history-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .history-empty {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -210,6 +283,16 @@
         </div>
 
         <button id="download-btn">Download PNG</button>
+
+        <div class="history-section">
+            <div class="history-header">
+                <h3>Recent QR Codes</h3>
+                <button class="clear-history" id="clear-history">Clear</button>
+            </div>
+            <div class="history-list" id="history-list">
+                <p class="history-empty">No history yet</p>
+            </div>
+        </div>
     </div>
 
     <!-- QRCode.js library -->
@@ -233,6 +316,49 @@
         const downloadBtn = document.getElementById('download-btn');
         const fgColorPicker = document.getElementById('fg-color');
         const bgColorPicker = document.getElementById('bg-color');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history');
+
+        // History functions
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('qrHistory') || '[]');
+        }
+
+        function saveToHistory(text) {
+            let history = getHistory();
+            history = history.filter(item => item !== text);
+            history.unshift(text);
+            history = history.slice(0, 10);
+            localStorage.setItem('qrHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const history = getHistory();
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="history-empty">No history yet</p>';
+                return;
+            }
+            historyList.innerHTML = history.map(text =>
+                `<div class="history-item" data-text="${text.replace(/"/g, '&quot;')}">
+                    <span class="history-text">${text}</span>
+                </div>`
+            ).join('');
+
+            historyList.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    textInput.value = item.dataset.text;
+                    generateBtn.click();
+                });
+            });
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            localStorage.removeItem('qrHistory');
+            renderHistory();
+        });
+
+        renderHistory();
 
         // Update colors
         fgColorPicker.addEventListener('input', () => {
@@ -273,6 +399,9 @@
 
             // Show download button
             downloadBtn.style.display = 'block';
+
+            // Save to history
+            saveToHistory(text);
         });
 
         // Download QR code as PNG
