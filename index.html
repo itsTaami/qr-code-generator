@@ -124,6 +124,16 @@
             font-weight: 600;
             color: #667eea;
         }
+
+        #download-btn {
+            margin-top: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            display: none;
+        }
+
+        #download-btn:hover {
+            box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -148,6 +158,8 @@
         <div id="qr-output">
             <p class="placeholder">Your QR code will appear here</p>
         </div>
+
+        <button id="download-btn">Download PNG</button>
     </div>
 
     <!-- QRCode.js library -->
@@ -166,6 +178,7 @@
         const qrOutput = document.getElementById('qr-output');
         const sizeSlider = document.getElementById('size-slider');
         const sizeValue = document.getElementById('size-value');
+        const downloadBtn = document.getElementById('download-btn');
 
         // Update size display
         sizeSlider.addEventListener('input', () => {
@@ -194,6 +207,20 @@
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
             });
+
+            // Show download button
+            downloadBtn.style.display = 'block';
+        });
+
+        // Download QR code as PNG
+        downloadBtn.addEventListener('click', () => {
+            const canvas = qrOutput.querySelector('canvas');
+            if (!canvas) return;
+
+            const link = document.createElement('a');
+            link.download = 'qrcode-' + Date.now() + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         });
 
         // Generate on Enter key
